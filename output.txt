@@ -1,0 +1,141 @@
+set serveroutput on;
+
+-- merge
+declare
+    v_id number := &id;
+    v_numar_comenzi number;
+    v_nume angajati.nume%type;
+    v_salariul angajati.salariul%type;
+begin
+    select a.nume, a.salariul, count(c.id_comanda)
+    into v_nume, v_salariul, v_numar_comenzi
+    from angajati a
+    join comenzi c on c.id_angajat = a.id_angajat
+    where a.id_angajat = v_id
+    group by a.nume, a.salariul;
+
+    dbms_output.put_line(v_numar_comenzi || ' ' || v_nume || ' ' || v_salariul);
+    
+    if v_numar_comenzi between 3 and 7 then
+        v_salariul := v_salariul * 1.1;
+    elsif v_numar_comenzi > 7 then
+        v_salariul := v_salariul * 1.2;
+    end if;
+        
+    update angajati
+    set salariul = v_salariul
+    where id_angajat = v_id
+    returning salariul into v_salariul;
+    
+    dbms_output.put_line(v_salariul);
+end;
+/
+
+-- merge
+declare
+    v_id angajati.id_angajat%type := 100;
+    v_nume angajati.nume%type;
+    v_sal angajati.salariul%type;
+    v_vechime number;
+begin
+    loop
+        select nume, salariul, round((sysdate - data_angajare)/360, 2)
+        into v_nume, v_sal, v_vechime
+        from angajati
+        where id_angajat = v_id;
+        
+        dbms_output.put_line(v_id || ' ' || v_nume || ' ' || v_sal);
+        
+        v_id := v_id + 1;
+    exit when v_id > 120;
+    end loop;
+end;
+/
+
+-- merge
+declare
+    v_nume angajati.nume%type;
+    v_sal angajati.salariul%type;
+    v_vechime number;
+begin
+    for i in 100..120 loop
+        select nume, salariul, round((sysdate - data_angajare)/360, 2)
+        into v_nume, v_sal, v_vechime
+        from angajati
+        where id_angajat = i;
+        dbms_output.put_line(i || ' ' || v_nume || ' ' || v_sal || ' ' || v_vechime);
+    end loop;
+end;
+/
+
+-- merge
+declare
+    v_nume angajati.nume%type;
+    v_sal angajati.salariul%type;
+    v_vechime number;
+    i number := 100;
+begin
+    while i <= 120 loop
+        select nume, salariul, round((sysdate - data_angajare)/360, 2)
+        into v_nume, v_sal, v_vechime
+        from angajati
+        where id_angajat = i;
+        dbms_output.put_line(i || ' ' || v_nume || ' ' || v_sal || ' ' || v_vechime);
+        i := i +1;
+    end loop;
+end;
+/
+
+delete from angajati where id_angajat = 150;
+
+-- merge
+declare
+    v_min angajati.id_angajat%type;
+    v_max angajati.id_angajat%type;
+    v_nume angajati.nume%type;
+    v_salariul angajati.salariul%type;
+begin
+    select min(id_angajat), max(id_angajat)
+    into v_min, v_max
+    from angajati;
+    
+    for i in v_min..v_max loop
+        select nume, salariul
+        into v_nume, v_salariul
+        from angajati
+        where id_angajat = i;
+        dbms_output.put_line(i||' '||v_nume||' '||v_salariul);
+    end loop;
+end;
+/
+
+-- merge
+declare
+    v_min angajati.id_angajat%type;
+    v_max angajati.id_angajat%type;
+    v_nume angajati.nume%type;
+    v_salariul angajati.salariul%type;
+    v_nr number;
+begin
+    select min(id_angajat), max(id_angajat)
+    into v_min, v_max
+    from angajati;
+    
+    for i in v_min..v_max loop
+        select count(*) into v_nr
+        from angajati
+        where id_angajat = i;
+        
+        if (v_nr = 1) then
+            select nume, salariul
+            into v_nume, v_salariul
+            from angajati
+            where id_angajat = i;
+            dbms_output.put_line(i||' '||v_nume||' '||v_salariul);
+        else 
+        dbms_output.put_line('Nu exista');
+        end if;
+    end loop;
+end;
+/
+
