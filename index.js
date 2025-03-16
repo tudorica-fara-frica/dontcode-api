@@ -57,7 +57,9 @@ app
         const docSnap = await docRef.get();
 
         let newContent;
-        const formattedDate = new Date().toLocaleString();
+        const formattedDate = new Date().toLocaleString("ro-RO", {
+          timeZone: "Europe/Bucharest",
+        });
 
         if (docSnap.exists) {
           const oldContent = docSnap.data().content;
